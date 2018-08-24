@@ -1,0 +1,108 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
+        classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.3'
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'idea'
+apply plugin: 'com.getkeepsafe.dexcount'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "io.netifi.proteus.kotlin.app"
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            proto { srcDir 'src/main/debug/proto' }
+        }
+
+        test {
+            proto { srcDir 'src/main/test/proto' }
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/io.netty.versions.properties'
+    }
+
+}
+
+protobuf {
+    generatedFilesBaseDir = "${projectDir}/src/generated"
+
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.5.0'
+    }
+
+    plugins {
+        javalite {
+            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+        }
+        proteus {
+            artifact = "io.netifi.proteuskotlin:protobuf-rpc:0.8.9-SNAPSHOT"
+        }
+    }
+    generateProtoTasks {
+
+        all().each { task ->
+            task.builtins {
+                // In most cases you don't need the full Java outputME
+                // if you use the lite output.
+                remove java
+            }
+            task.plugins {
+                javalite {}
+                proteus {}
+            }
+        }
+    }
+}
+
+idea {
+    module {
+        sourceDirs += file("src/main/debug/proto")
+        sourceDirs += file("src/generated/main/java")
+        sourceDirs += file("src/generated/main/proteus")
+
+        generatedSourceDirs += file('src/generated/debug/javalite')
+        generatedSourceDirs += file('src/generated/debug/proteus')
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation('io.netifi.proteuskotlin:client:0.8.9-SNAPSHOT') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation 'com.google.protobuf:protobuf-lite:3.0.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support:design:27.1.1'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
