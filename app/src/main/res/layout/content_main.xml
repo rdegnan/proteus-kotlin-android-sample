@@ -8,13 +8,93 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/req_rep_result_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:textSize="18sp"
+            tools:text="request response" />
+
+        <TextView
+            android:id="@+id/client_stream_result_view"
+            android:layout_below="@id/req_rep_result_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:textSize="18sp"
+            tools:text="client stream" />
+
+        <TextView
+            android:id="@+id/server_stream_result_view"
+            android:layout_below="@id/client_stream_result_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:textSize="18sp"
+            tools:text="server stream" />
+
+        <TextView
+            android:id="@+id/channel_result_view"
+            android:layout_below="@id/server_stream_result_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:textSize="18sp"
+            tools:text="channel" />
+        <TextView
+            android:id="@+id/error_result_view"
+            android:layout_below="@id/channel_result_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:textSize="18sp"
+            tools:text="error" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="15dp">
+
+            <Button
+                android:id="@+id/request_response_button"
+                android:layout_width="0dp"
+                android:layout_height="64sp"
+                android:layout_weight="1"
+                android:text="response" />
+
+            <Button
+                android:id="@+id/client_stream_button"
+                android:layout_width="0dp"
+                android:layout_height="64sp"
+                android:layout_weight="1"
+                android:text="client-stream" />
+
+            <Button
+                android:id="@+id/server_stream_button"
+                android:layout_width="0dp"
+                android:layout_height="64sp"
+                android:layout_weight="1"
+                android:text="server-stream" />
+
+            <Button
+                android:id="@+id/channel_button"
+                android:layout_width="0dp"
+                android:layout_height="64sp"
+                android:layout_weight="1"
+                android:text="channel" />
+        </LinearLayout>
+    </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

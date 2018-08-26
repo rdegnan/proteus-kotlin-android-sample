@@ -1,30 +1,27 @@
 syntax = "proto3";
 
-package io.netifi.proteus.testing.protobuf;
+package io.netifi.proteus.kotlin.sample.protobuf;
 
 import "google/protobuf/empty.proto";
 
-option java_package = "io.netifi.proteus.testing.protobuf";
-option java_outer_classname = "SimpleServiceProto";
+option java_package = "io.netifi.proteus.kotlin.sample.protobuf";
+option java_outer_classname = "InteractionsServiceProto";
 option java_multiple_files = true;
 
 // A simple service for test.
-service SimpleService {
-  // fire and forget
-  rpc FireAndForget (SimpleRequest) returns (google.protobuf.Empty) {
-  }
+service InteractionsService {
 
   // Simple unary RPC.
-  rpc UnaryRpc (SimpleRequest) returns (SimpleResponse) {}
-
-  // Simple client-to-server streaming RPC.
-  rpc ClientStreamingRpc (stream SimpleRequest) returns (SimpleResponse) {}
+  rpc RequestResponse (SimpleRequest) returns (SimpleResponse) {}
 
   // Simple server-to-client streaming RPC.
-  rpc ServerStreamingRpc (SimpleRequest) returns (stream SimpleResponse) {}
+  rpc ServerStream (SimpleRequest) returns (stream SimpleResponse) {}
+
+  // Simple unary RPC.
+  rpc ClientStream (stream SimpleRequest) returns (SimpleResponse) {}
 
   // Simple bidirectional streaming RPC.
-  rpc BidiStreamingRpc (stream SimpleRequest) returns (stream SimpleResponse) {}
+  rpc Channel (stream SimpleRequest) returns (stream SimpleResponse) {}
 }
 
 // A simple request message type for test.
