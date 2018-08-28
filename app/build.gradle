@@ -99,7 +99,7 @@ configurations.all {
 dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation('io.netifi.proteuskotlin:client-ext:0.8.9-SNAPSHOT') {
+    implementation('io.netifi.proteuskotlin:client-android:0.8.9-SNAPSHOT') {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'

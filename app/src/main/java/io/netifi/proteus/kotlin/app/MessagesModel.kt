@@ -33,6 +33,7 @@ class MessagesModel {
     }
 
     fun receiveError(err: Throwable) {
+        err.printStackTrace()
         error.onNext(err)
     }
 

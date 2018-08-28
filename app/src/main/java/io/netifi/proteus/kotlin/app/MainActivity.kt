@@ -1,10 +1,9 @@
 package io.netifi.proteus.kotlin.app
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.widget.TextView
-import io.netifi.proteus.kotlin.ext.KProteus
+import io.netifi.proteus.kotlin.android.ProteusManager
+import io.netifi.proteus.kotlin.app.App.ProteusTest
 import io.netifi.proteus.kotlin.ext.builder.Group
 import io.netifi.proteus.kotlin.sample.protobuf.InteractionsService
 import io.netifi.proteus.kotlin.sample.protobuf.InteractionsServiceClient
@@ -15,26 +14,43 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.reactivestreams.Publisher
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var proteus: KProteus
+    private lateinit var proteusManager: ProteusManager
     private lateinit var client: InteractionsServiceClient
+    private lateinit var helloServices: Group
 
-    private val d = CompositeDisposable()
-    lateinit var model: MessagesModel
+    private lateinit var d: CompositeDisposable
+    private lateinit var model: MessagesModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
         model = App.model()
+        proteusManager = App.proteusManager()
+        helloServices = App.helloServices()
+    }
 
-        val msg = request("msg")
+    override fun onStart() {
+        super.onStart()
+        start()
+    }
+
+    override fun onStop() {
+        stop()
+        super.onStop()
+    }
+
+    private fun start() {
+        d = CompositeDisposable()
+
+        val msg = SimpleRequest
+                .newBuilder()
+                .setRequestMessage("msg").build()
 
         d += click(request_response_button)
                 .flatMapSingle {
@@ -77,89 +93,48 @@ class MainActivity : AppCompatActivity() {
         d += bind(model.clientSreamMessages(), client_stream_result_view)
         d += bind(model.serverStreamMessages(), server_stream_result_view)
         d += bindError(model.errors(), server_stream_result_view)
-    }
 
-    @SuppressLint("SetTextI18n")
-    private fun bind(flow: Flowable<ResponseItem>, v: TextView): Disposable =
-            flow.subscribe { v.text = "${it.interaction}. Total messages: ${it.msg} ${it.counter}" }
-
-    @SuppressLint("SetTextI18n")
-    private fun bindError(flow: Flowable<Throwable>, v: TextView): Disposable =
-            flow.subscribe { v.text = "Error: ${it.message}" }
-
-    override fun onStart() {
-        super.onStart()
-        start()
-    }
-
-    override fun onStop() {
-        stop()
-        super.onStop()
-    }
-
-    private fun start() {
-        val group = Group("quickstart.services.helloservices")
-
-        proteus = KProteus
-                .builder()
-                .credentials(HardCodedCredentials())
-                .brokers(SingleBroker())
-                .respondersDestination(group)
-                .transport(okHttpWebsocketTransport())
-                .build()
-
-        proteus.responder(ServiceHandler())
-        client = proteus.requester(group)
+        val proteus = proteusManager
+                .obtain(ProteusTest) {
+                    it.responder(ServiceHandler())
+                }
+        client = proteus.requester(helloServices)
     }
 
     private fun stop() {
         d.dispose()
-        proteus.close()
-                .andThen(proteus.onClose())
-                .subscribe()
-    }
-
-
-    companion object {
-
-        private fun request(msg: String) =
-                SimpleRequest
-                        .newBuilder()
-                        .setRequestMessage(msg).build()
-
-        private fun response(request: SimpleRequest) =
-                SimpleResponse
-                        .newBuilder()
-                        .setResponseMessage(request.requestMessage).build()
+        proteusManager.release(ProteusTest)
     }
 
     private class ServiceHandler : InteractionsService {
         override fun clientStream(messages: Publisher<SimpleRequest>?, metadata: ByteBuf?)
-                : Single<SimpleResponse> {
-            return Flowable
-                    .fromPublisher(messages)
-                    .lastOrError()
-                    .map {
-                        SimpleResponse.newBuilder()
-                                .setResponseMessage(it.requestMessage)
-                                .build()
-                    }
-        }
+                : Single<SimpleResponse> =
+                Flowable.fromPublisher(messages)
+                        .lastOrError()
+                        .map {
+                            SimpleResponse.newBuilder()
+                                    .setResponseMessage(it.requestMessage)
+                                    .build()
+                        }
 
         override fun channel(messages: Publisher<SimpleRequest>,
-                             metadata: ByteBuf?): Flowable<SimpleResponse> {
-            return Flowable.fromPublisher(messages).map { response(it) }
-        }
+                             metadata: ByteBuf?): Flowable<SimpleResponse> =
+                Flowable.fromPublisher(messages).map { response(it) }
 
         override fun requestResponse(message: SimpleRequest,
-                                     metadata: ByteBuf?): Single<SimpleResponse> {
-            return Single.just(response(message))
-        }
+                                     metadata: ByteBuf?): Single<SimpleResponse> =
+                Single.just(response(message))
 
         override fun serverStream(message: SimpleRequest,
                                   metadata: ByteBuf?): Flowable<SimpleResponse> {
             val response = response(message)
             return Flowable.just(response, response, response)
         }
+
+        private fun response(request: SimpleRequest) =
+                SimpleResponse
+                        .newBuilder()
+                        .setResponseMessage(request.requestMessage).build()
+
     }
 }
