@@ -1,6 +1,6 @@
 package io.netifi.proteus.kotlin.app
 
-import io.netifi.proteus.kotlin.sample.protobuf.SimpleResponse
+import com.google.protobuf.Value
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
@@ -16,19 +16,19 @@ class MessagesModel {
     private val channelStream = Counting("Channel")
     private val error = PublishProcessor.create<Throwable>()
 
-    fun receiveRequestResponse(resp: SimpleResponse) {
+    fun receiveRequestResponse(resp: Value) {
         reqResp.count(resp)
     }
 
-    fun receiveClientStream(resp: SimpleResponse) {
+    fun receiveClientStream(resp: Value) {
         clientStream.count(resp)
     }
 
-    fun receiveServerStream(resp: SimpleResponse) {
+    fun receiveServerStream(resp: Value) {
         serverStream.count(resp)
     }
 
-    fun receiveChannel(resp: SimpleResponse) {
+    fun receiveChannel(resp: Value) {
         channelStream.count(resp)
     }
 
@@ -60,9 +60,9 @@ class MessagesModel {
     private class Counting(private val interaction: String) {
         private val stream = BehaviorProcessor.create<ResponseItem>()
         private var counter = 0
-        fun count(msg: SimpleResponse) {
+        fun count(msg: Value) {
             counter++
-            stream.onNext(ResponseItem(interaction, msg.responseMessage, counter))
+            stream.onNext(ResponseItem(interaction, msg.stringValue, counter))
         }
 
         fun stream(): Flowable<ResponseItem> = stream
